@@ -9,7 +9,7 @@
   "express": "^4.18.2",
   "cors": "^2.8.5",
   "axios": "^1.6.8",
-  "axios-cookiejar-support": "^3.0.0"
+  "axios-cookiejar-support": "^3.0.0",
 
   "tough-cookie": "^4.1.3"
 }
