@@ -1,8 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const tough = require('tough-cookie');
+const { wrapper } = require('axios-cookiejar-support');
+
 const app = express();
 app.use(cors());
+
+const jar = new tough.CookieJar();
+const client = wrapper(axios.create({ jar }));
 
 const headers = {
   'User-Agent': 'Mozilla/5.0',
@@ -14,15 +20,11 @@ app.get('/option-chain', async (req, res) => {
   const symbol = req.query.symbol || 'NIFTY';
 
   try {
-    // Step 1: Warm up NSE site to get cookies
-    await axios.get('https://www.nseindia.com', { headers });
-
-    // Step 2: Fetch Option Chain
-    const response = await axios.get(
+    await client.get('https://www.nseindia.com', { headers });
+    const response = await client.get(
       `https://www.nseindia.com/api/option-chain-indices?symbol=${symbol}`,
       { headers, timeout: 10000 }
     );
-
     res.json(response.data);
   } catch (err) {
     console.error('❌ Error:', err.message);
