@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const tough = require('tough-cookie');
 const { wrapper } = require('axios-cookiejar-support');
+const tough = require('tough-cookie');
 
 const app = express();
 app.use(cors());
@@ -13,22 +13,29 @@ const client = wrapper(axios.create({ jar }));
 const headers = {
   'User-Agent': 'Mozilla/5.0',
   'Accept': 'application/json',
-  'Referer': 'https://www.nseindia.com/',
+  'Referer': 'https://www.nseindia.com',
 };
 
 app.get('/option-chain', async (req, res) => {
   const symbol = req.query.symbol || 'NIFTY';
 
   try {
+    // Warm-up request to set cookie
     await client.get('https://www.nseindia.com', { headers });
+
+    // Actual data fetch
     const response = await client.get(
       `https://www.nseindia.com/api/option-chain-indices?symbol=${symbol}`,
-      { headers, timeout: 10000 }
+      { headers }
     );
+
     res.json(response.data);
-  } catch (err) {
-    console.error('❌ Error:', err.message);
-    res.status(500).json({ error: 'NSE API failed', details: err.message });
+  } catch (error) {
+    console.error('❌ NSE fetch failed:', error.message);
+    res.status(502).json({
+      error: 'NSE Gateway failed',
+      message: error.message,
+    });
   }
 });
 
